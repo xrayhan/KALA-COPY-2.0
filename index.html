@@ -64,11 +64,9 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
-    <!-- Improved Process Shim -->
     <script>
-        if (typeof window.process === 'undefined') {
-            window.process = { env: {} };
-        }
+        // Ensure process.env is available for the SDK
+        window.process = window.process || { env: {} };
     </script>
 <script type="importmap">
 {

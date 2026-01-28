@@ -32,19 +32,22 @@ const App: React.FC = () => {
     e?.preventDefault();
     if (!input.trim() || isLoading) return;
 
+    const currentInput = input;
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      text: input,
+      text: currentInput,
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
     try {
-      const responseText = await sendMessageToGemini(messages, input, isAdultMode);
+      // Pass the updated history (including user's latest message) to the service
+      const responseText = await sendMessageToGemini(newMessages, currentInput, isAdultMode);
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -114,7 +117,7 @@ const App: React.FC = () => {
                 <span className="px-2 py-0.5 rounded-md bg-pink-500/20 text-pink-400 text-[9px] font-bold uppercase tracking-widest border border-pink-500/20 animate-pulse">Deep Love</span>
               )}
             </div>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-0.5">Created by Rayhan Sir</p>
+            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-0.5">Created by Rafi Sir</p>
           </div>
         </div>
 
