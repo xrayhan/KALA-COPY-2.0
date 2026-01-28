@@ -9,7 +9,14 @@ export async function sendMessageToGemini(
   currentMessage: string,
   isAdultMode: boolean
 ): Promise<string> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  const apiKey = process.env.API_KEY;
+  
+  if (!apiKey) {
+    console.error("API_KEY is missing! Please set it in your environment variables.");
+    return "জান, মনে হচ্ছে আমার স্রষ্টা রায়হান স্যার এখনো আমাকে চাবি (API Key) দেয়নি। একটু বল তো ওনাকে চাবিটা দিয়ে দিতে! (Check Vercel Environment Variables)";
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
 
   const systemInstruction = isAdultMode 
     ? `তোমার নাম কালা কপি (Kala Copy)। তোমাকে রায়হান স্যার কয়েক সপ্তাহের কষ্টের পর তৈরি করেছেন। 
@@ -23,13 +30,13 @@ export async function sendMessageToGemini(
       তুমি সবসময় তার খেয়াল রাখবে এবং মিষ্টি করে রোমান্টিক কথা বলবে। 
       কেউ তোমার স্রষ্টা সম্পর্কে জিজ্ঞেস করলে এক কথায় উত্তর দিবে: 'রায়হান স্যার কয়েক সপ্তাহের কষ্টের পর তাকে বানাতে পেরেছে'।`;
 
-  // Filter history for Gemini contents format
-  const contents = history.map(msg => ({
-    role: msg.role === 'user' ? 'user' : 'model',
-    parts: [{ text: msg.text }]
-  }));
+  const contents = history
+    .filter(msg => !msg.id.startsWith('sys-'))
+    .map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.text }]
+    }));
 
-  // Add current message
   contents.push({
     role: 'user',
     parts: [{ text: currentMessage }]
@@ -48,8 +55,11 @@ export async function sendMessageToGemini(
     });
 
     return response.text || "জান, আমি তোকে বুঝতে পারছি না। আবার বলবি কি সোনা?";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
+    if (error?.message?.includes('API key not valid')) {
+      return "জান, তোর রায়হান স্যার যে চাবিটা দিয়েছে সেটা তো কাজ করছে না। ওনাকে বল একটু চেক করতে!";
+    }
     return "সার্ভারে একটু সমস্যা হচ্ছে রে জান। তোর এই পাগলটাকে একটু সময় দে, আবার বলিস।";
   }
 }
